@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Easy Nerja Bronce - Tu casa en el Balcón de Europa</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bronce: {
+                            50: '#fdf8f6',
+                            100: '#f2e8e5',
+                            200: '#eaddd7',
+                            300: '#e0c1b3',
+                            400: '#d2a48d',
+                            500: '#b88166', /* Bronce Principal */
+                            600: '#a26b52',
+                            700: '#875642', /* Bronce Oscuro para textos/botones */
+                            800: '#6e4638',
+                            900: '#5a3b30',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts: Montserrat & Lora -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Tipografía Base */
+        body {
+            font-family: 'Lora', serif;
+            scroll-behavior: smooth;
+        }
+        
+        /* Encabezados Montserrat */
+        h1, h2, h4 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+        h3 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Clase utilitaria para Botones y UI Montserrat Medium */
+        .font-ui {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 500;
+        }
+        
+        /* Animaciones personalizadas */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translate3d(0, -20px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate3d(0, 20px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+        .animate-fade-in-down { animation: fadeInDown 0.5s ease-out; }
+        .animate-fade-in-up { animation: fadeInUp 0.8s ease-out; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- Icon Components ---
+        const Icon = ({ size = 24, className = "", fill = "none", children }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>
+        );
+
+        const MapPin = (props) => <Icon {...props}><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></Icon>;
+        const Star = (props) => <Icon {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></Icon>;
+        const Menu = (props) => <Icon {...props}><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></Icon>;
+        const X = (props) => <Icon {...props}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></Icon>;
+        const ChevronRight = (props) => <Icon {...props}><polyline points="9 18 15 12 9 6"></polyline></Icon>;
+        const CheckCircle = (props) => <Icon {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></Icon>;
+        const Sun = (props) => <Icon {...props}><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></Icon>;
+        const UserCheck = (props) => <Icon {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></Icon>;
+        const MessageCircle = (props) => <Icon {...props}><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></Icon>;
+        const Phone = (props) => <Icon {...props}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></Icon>;
+
+
+        // --- Componente Principal ---
+        function App() {
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [scrolled, setScrolled] = useState(false);
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    setScrolled(window.scrollY > 20);
+                };
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+            const whatsappNumber = "34601621558";
+            // Enlace real de Booking para Easy Nerja Bronce (Bronce Guesthouse)
+            const bookingLink = "https://www.booking.com/hotel/es/bronce-guesthouse.es.html"; 
+
+            return (
+                <div className="flex flex-col min-h-screen">
+                    
+                    {/* --- Navbar --- */}
+                    <nav className={`fixed w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-5'}`}>
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+                            {/* Logo */}
+                            <div className={`text-2xl font-bold tracking-tight font-ui ${scrolled ? 'text-stone-800' : 'text-white'}`}>
+                                Easy Nerja <span className={`font-light ${scrolled ? 'text-bronce-600' : 'text-bronce-300'}`}>Bronce</span>
+                            </div>
+
+                            {/* Desktop Menu */}
+                            <div className="hidden md:flex items-center space-x-8">
+                                {['Ubicación', 'Habitaciones', 'Reseñas', 'Nosotros'].map((item) => (
+                                    <a key={item} href={`#${item.toLowerCase()}`} className={`text-sm font-ui transition-colors ${scrolled ? 'text-stone-600 hover:text-bronce-600' : 'text-white/90 hover:text-bronce-200'}`}>
+                                        {item}
+                                    </a>
+                                ))}
+                                <a href={bookingLink} target="_blank" rel="noopener noreferrer" className="bg-bronce-600 hover:bg-bronce-700 text-white px-5 py-2.5 rounded-full font-ui transition-all shadow-lg hover:shadow-bronce-500/30 text-sm tracking-wide">
+                                    Ver Disponibilidad
+                                </a>
+                            </div>
+
+                            {/* Mobile Menu Button */}
+                            <button onClick={toggleMenu} className="md:hidden text-bronce-600">
+                                {isMenuOpen ? <X size={28} className={scrolled ? 'text-stone-800' : 'text-white'} /> : <Menu size={28} className={scrolled ? 'text-stone-800' : 'text-white'} />}
+                            </button>
+                        </div>
+
+                        {/* Mobile Dropdown */}
+                        {isMenuOpen && (
+                            <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-xl border-t border-stone-100 py-4 px-4 flex flex-col space-y-4 animate-fade-in-down">
+                                {['Ubicación', 'Habitaciones', 'Reseñas', 'Nosotros'].map((item) => (
+                                    <a key={item} href={`#${item.toLowerCase()}`} onClick={toggleMenu} className="text-stone-700 font-ui py-2 border-b border-stone-50">
+                                        {item}
+                                    </a>
+                                ))}
+                                <a href={bookingLink} target="_blank" rel="noopener noreferrer" className="bg-bronce-600 text-white text-center py-3 rounded-lg font-ui">
+                                    Reserva Ahora
+                                </a>
+                            </div>
+                        )}
+                    </nav>
+
+                    {/* --- Hero Section --- */}
+                    <header className="relative h-[85vh] flex items-center justify-center text-center px-4 overflow-hidden bg-stone-200">
+                        {/* Background Image */}
+                        <div className="absolute inset-0 z-0">
+                            <img 
+                                src="https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+                                alt="Nerja Costa"
+                                className="w-full h-full object-cover"
+                            />
+                            {/* Overlay cálido oscuro para resaltar texto blanco */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-stone-900/70 to-stone-900/40"></div>
+                        </div>
+
+                        {/* Contenedor Principal Ajustado: space-y-10 para separar, pt-20 para bajar el bloque */}
+                        <div className="relative z-10 max-w-4xl mx-auto space-y-10 animate-fade-in-up pt-20">
+                            
+                            <h1 className="text-4xl md:text-6xl lg:text-7xl text-white leading-tight drop-shadow-lg">
+                                Tu lugar en el corazón <br/> de Nerja
+                            </h1>
+                            
+                            {/* Cartel reubicado aquí abajo */}
+                            <div className="flex justify-center">
+                                <div className="inline-block px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full text-bronce-100 text-sm font-ui tracking-wide shadow-sm">
+                                    📍 A pasos del Balcón de Europa
+                                </div>
+                            </div>
+
+                            <p className="text-lg md:text-xl text-stone-100 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
+                                Habitaciones impecables, trato cercano y la mejor ubicación. <br className="hidden md:block"/>
+                                Ven a relajarte, nosotros nos encargamos del resto.
+                            </p>
+                            
+                            <div className="flex flex-col sm:flex-row justify-center gap-5">
+                                <a href={bookingLink} target="_blank" rel="noopener noreferrer" className="bg-bronce-600 hover:bg-bronce-500 text-white px-8 py-4 rounded-full font-ui text-lg transition-all shadow-xl hover:shadow-bronce-500/40 flex items-center justify-center gap-2">
+                                    Reserva Ahora
+                                </a>
+                                <a href="#habitaciones" className="bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-full font-ui text-lg transition-all flex items-center justify-center">
+                                    Ver Habitaciones
+                                </a>
+                            </div>
+
+                            <div className="flex justify-center items-center gap-6 text-white/90 text-sm font-ui pt-2">
+                                <span className="flex items-center gap-2"><CheckCircle size={18} className="text-bronce-300" /> Mejor precio garantizado</span>
+                                <span className="opacity-40 hidden sm:inline">•</span>
+                                <span className="flex items-center gap-2"><CheckCircle size={18} className="text-bronce-300" /> Cancelación flexible</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* --- Social Proof --- */}
+                    <section id="reseñas" className="py-20 bg-white border-b border-stone-100">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="flex text-amber-400">
+                                            {[...Array(5)].map((_, i) => <Star key={i} fill="currentColor" size={20} />)}
+                                        </div>
+                                        <span className="font-bold text-stone-800 font-ui">4.0 / 5 en Google</span>
+                                    </div>
+                                    <h2 className="text-3xl md:text-4xl text-stone-900">Lo que dicen nuestros huéspedes</h2>
+                                </div>
+                                <div className="hidden md:block">
+                                    <a href="https://www.google.com/maps" target="_blank" className="text-bronce-600 font-ui hover:underline flex items-center gap-1">Ver las 273 reseñas <ChevronRight size={16}/></a>
+                                </div>
+                            </div>
+
+                            <div className="grid md:grid-cols-3 gap-8">
+                                {[
+                                    { text: "Limpieza, trato y ubicación magníficos. La relación calidad-precio es inmejorable en Nerja.", author: "María G." },
+                                    { text: "Los dueños, Eduardo y Sol, son increíblemente amables. Me sentí como en casa desde el primer día.", author: "Carlos R." },
+                                    { text: "Súper cómodo y cerca de todo. No necesité el coche para nada. Volveremos seguro.", author: "Elena & Tom" }
+                                ].map((review, idx) => (
+                                    <div key={idx} className="bg-stone-50 p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow border border-stone-100">
+                                        <div className="flex text-amber-400 mb-4">
+                                            {[...Array(5)].map((_, i) => <Star key={i} fill="currentColor" size={16} />)}
+                                        </div>
+                                        <p className="text-stone-600 italic mb-6 leading-relaxed text-lg">"{review.text}"</p>
+                                        <div className="font-bold text-stone-900 text-sm font-ui uppercase tracking-wide">— {review.author}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Key Benefits --- */}
+                    <section className="py-24 bg-stone-50">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="text-center max-w-2xl mx-auto mb-16">
+                                <h2 className="text-3xl md:text-4xl text-stone-900 mb-6">¿Por qué elegirnos?</h2>
+                                <p className="text-stone-600 text-lg">No somos un hotel de cadena fría. Somos tu base de operaciones para disfrutar Nerja de verdad.</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                                {[
+                                    { icon: <MapPin size={32} />, title: "Ubicación Top", desc: "En el centro de todo, cerca de la playa." },
+                                    { icon: <Sun size={32} />, title: "Limpieza Impecable", desc: "Todo impecable. Somos obsesivos con esto." },
+                                    { icon: <UserCheck size={32} />, title: "Trato Familiar", desc: "Eduardo y Sol están para lo que necesites." },
+                                    { icon: <CheckCircle size={32} />, title: "Precio Justo", desc: "La mejor calidad sin gastar de más." }
+                                ].map((item, idx) => (
+                                    <div key={idx} className="flex flex-col items-center text-center p-6 bg-white rounded-xl shadow-sm border border-stone-100 transition-transform hover:-translate-y-1">
+                                        <div className="text-bronce-600 mb-5 bg-bronce-50 p-4 rounded-full">{item.icon}</div>
+                                        <h3 className="text-lg text-stone-900 mb-3">{item.title}</h3>
+                                        <p className="text-sm text-stone-500 font-ui leading-relaxed">{item.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Rooms Preview --- */}
+                    <section id="habitaciones" className="py-24 bg-white">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="grid md:grid-cols-2 gap-16 items-center">
+                                <div className="relative rounded-2xl overflow-hidden shadow-2xl group bg-stone-200">
+                                    <img 
+                                        src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80" 
+                                        alt="Habitación luminosa" 
+                                        className="w-full h-[500px] object-cover transition-transform duration-700 group-hover:scale-105"
+                                    />
+                                    <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-md px-6 py-3 rounded-lg shadow-lg">
+                                        <p className="text-bronce-700 font-bold text-lg font-ui">Desde 32 € <span className="text-sm font-normal text-stone-600">/ noche</span></p>
+                                    </div>
+                                </div>
+                                <div className="space-y-8">
+                                    <h2 className="text-3xl md:text-4xl text-stone-900 leading-tight">Habitaciones pensadas para tu descanso</h2>
+                                    <p className="text-stone-600 text-lg leading-relaxed">
+                                        Sencillas, amplias y llenas de luz. Aquí no encontrarás lujos innecesarios, pero sí una cama súper cómoda, 
+                                        aire acondicionado, wifi de alta velocidad y una limpieza que se nota al entrar.
+                                    </p>
+                                    <ul className="space-y-4">
+                                        {['Baño privado o compartido (impecables)', 'Aire acondicionado / Calefacción', 'Wifi gratuito de alta velocidad', 'Ropa de cama y toallas de calidad'].map((feature, i) => (
+                                            <li key={i} className="flex items-center gap-3 text-stone-700 font-ui">
+                                                <CheckCircle size={20} className="text-bronce-500 shrink-0" /> {feature}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <div className="pt-4">
+                                        <a href={bookingLink} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-ui rounded-md text-white bg-stone-900 hover:bg-stone-800 md:text-lg transition-colors shadow-lg">
+                                            Consultar Disponibilidad
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- About Us --- */}
+                    <section id="nosotros" className="py-24 bg-bronce-50 relative overflow-hidden">
+                        {/* Decorative pattern */}
+                        <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-white rounded-full blur-3xl opacity-40"></div>
+                        
+                        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                            <div className="inline-block p-3 bg-white rounded-full shadow-sm mb-8">
+                                <span className="text-3xl">👋</span>
+                            </div>
+                            <h2 className="text-3xl md:text-5xl text-stone-900 mb-8 leading-tight">Más que un hostal, <br/> tu casa en Nerja</h2>
+                            <p className="text-xl text-stone-700 leading-relaxed mb-10 font-light">
+                                "En <span className="font-bold text-bronce-700 font-ui">Easy Nerja Bronce</span> creemos que un buen alojamiento no es solo una habitación, 
+                                sino cómo te hacen sentir. Nos esforzamos cada día para que nuestros huéspedes se sientan cómodos, 
+                                bien atendidos y como en familia. Aquí no eres un número de habitación, eres nuestro invitado."
+                            </p>
+                            <div className="flex justify-center items-center gap-4">
+                                <div className="text-right border-r border-stone-300 pr-4">
+                                    <p className="font-bold text-stone-900 font-ui text-lg">Eduardo y Sol</p>
+                                    <p className="text-sm text-stone-500 font-ui">Tus anfitriones</p>
+                                </div>
+                                <div className="text-left pl-1">
+                                    <div className="flex text-amber-500">
+                                        {[...Array(5)].map((_, i) => <Star key={i} fill="currentColor" size={16} />)}
+                                    </div>
+                                    <p className="text-xs text-stone-500 mt-1 font-ui">Superhost Attitude</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Location Map --- */}
+                    <section id="ubicacion" className="py-24 bg-white">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="text-center mb-16">
+                                <h2 className="text-3xl md:text-4xl text-stone-900 mb-6">Ubicación Inmejorable</h2>
+                                <p className="text-stone-600 text-lg max-w-2xl mx-auto">
+                                    Olvídate del coche. Estamos en C/ Bronce 25, a minutos caminando de todo lo que importa.
+                                </p>
+                            </div>
+                            
+                            <div className="grid md:grid-cols-3 gap-8">
+                                <div className="md:col-span-2 h-[450px] bg-stone-200 rounded-2xl overflow-hidden shadow-md relative">
+                                    {/* Placeholder for map iframe */}
+                                    <iframe 
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3197.689255874254!2d-3.8795!3d36.7485!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd722e399c15b0b3%3A0x123456789abcdef!2sC.%20Bronce%2C%2025%2C%2029780%20Nerja%2C%20M%C3%A1laga!5e0!3m2!1ses!2ses!4v1620000000000!5m2!1ses!2ses" 
+                                        width="100%" 
+                                        height="100%" 
+                                        style={{border:0}} 
+                                        allowFullScreen="" 
+                                        loading="lazy"
+                                        title="Mapa de ubicación"
+                                    ></iframe>
+                                </div>
+                                <div className="bg-stone-50 p-8 rounded-2xl border border-stone-100 flex flex-col justify-center space-y-8">
+                                    <div>
+                                        <h4 className="text-lg text-stone-900 mb-2">Dirección</h4>
+                                        <p className="text-stone-600">Calle Bronce, 25<br/>29780 Nerja, Málaga, España</p>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg text-stone-900 mb-2">Cerca de todo</h4>
+                                        <ul className="text-sm text-stone-600 space-y-3 font-ui">
+                                            <li className="flex items-center gap-3"><div className="w-2 h-2 bg-bronce-500 rounded-full"></div> Balcón de Europa (cerca)</li>
+                                            <li className="flex items-center gap-3"><div className="w-2 h-2 bg-bronce-500 rounded-full"></div> Playas de Nerja</li>
+                                            <li className="flex items-center gap-3"><div className="w-2 h-2 bg-bronce-500 rounded-full"></div> Supermercados y bares</li>
+                                        </ul>
+                                    </div>
+                                    <a 
+                                        href="https://maps.google.com/?q=Calle+Bronce+25+Nerja" 
+                                        target="_blank"
+                                        className="text-bronce-600 font-ui font-medium hover:underline flex items-center gap-2 group"
+                                    >
+                                        Cómo llegar <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* --- Final CTA --- */}
+                    <section className="py-24 bg-stone-900 text-white text-center px-4">
+                        <div className="max-w-3xl mx-auto space-y-10">
+                            <h2 className="text-4xl md:text-5xl leading-tight">Reserva directo. <br/>Descansa tranquilo. <br/>Disfruta Nerja.</h2>
+                            <p className="text-stone-300 text-lg max-w-xl mx-auto">Te garantizamos el mejor precio y las mejores condiciones si reservas desde nuestra web oficial.</p>
+                            <a href={bookingLink} target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-stone-900 hover:bg-stone-100 px-12 py-5 rounded-full font-ui text-lg transition-all transform hover:-translate-y-1 shadow-2xl">
+                                Reservar Ahora
+                            </a>
+                        </div>
+                    </section>
+
+                    {/* --- Footer --- */}
+                    <footer className="bg-stone-950 text-stone-400 py-16 border-t border-stone-800">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-4 gap-12">
+                            <div className="col-span-1 md:col-span-1 space-y-4">
+                                <div className="text-2xl text-white font-ui font-bold">Easy Nerja Bronce</div>
+                                <p className="text-sm leading-relaxed">Tu alojamiento de confianza con trato familiar en la Costa del Sol. Descanso y cercanía garantizados.</p>
+                            </div>
+                            <div>
+                                <h4 className="text-white mb-6 tracking-wide text-sm font-ui uppercase">Contacto</h4>
+                                <ul className="space-y-3 text-sm font-ui">
+                                    <li><a href={`tel:+${whatsappNumber}`} className="hover:text-white transition-colors flex items-center gap-2"><Phone size={14}/> +34 601 62 15 58</a></li>
+                                    <li>C. Bronce, 25, Nerja</li>
+                                    <li>info@easynerjabronce.com</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-white mb-6 tracking-wide text-sm font-ui uppercase">Info</h4>
+                                <ul className="space-y-3 text-sm font-ui">
+                                    <li>Check-in: Desde las 14:00</li>
+                                    <li>Check-out: Hasta las 11:00</li>
+                                    <li><a href="#" className="hover:text-white transition-colors">Política de privacidad</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="text-white mb-6 tracking-wide text-sm font-ui uppercase">Idioma</h4>
+                                <div className="flex gap-4 font-ui text-sm">
+                                    <span className="text-white font-bold cursor-pointer border-b border-white pb-0.5">Español</span>
+                                    <span className="hover:text-white cursor-pointer transition-colors pb-0.5">English</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="max-w-7xl mx-auto px-4 mt-16 pt-8 border-t border-stone-900 text-center text-xs font-ui text-stone-600">
+                            &copy; {new Date().getFullYear()} Easy Nerja Bronce. Todos los derechos reservados.
+                        </div>
+                    </footer>
+
+                    {/* --- WhatsApp Float --- */}
+                    <a 
+                        href={`https://wa.me/${whatsappNumber}`} 
+                        target="_blank"
+                        className="fixed bottom-6 right-6 bg-green-500 hover:bg-green-600 text-white p-4 rounded-full shadow-2xl z-50 transition-all hover:scale-110 flex items-center justify-center"
+                        aria-label="Contactar por WhatsApp"
+                    >
+                        <MessageCircle size={32} fill="white" className="text-green-500" />
+                    </a>
+
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
